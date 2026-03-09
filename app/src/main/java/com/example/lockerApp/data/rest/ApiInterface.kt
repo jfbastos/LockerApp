@@ -28,5 +28,12 @@ interface  ApiInterface {
         @Query("size") size: Int = 20
     ): DoorsResponse
 
+    @GET("doors/find")
+    suspend fun searchDoors(
+        @Query("name") name: String,
+        @Query("page") page: Int,
+        @Query("size") size: Int = 20
+    ): DoorsResponse
+
 
 }

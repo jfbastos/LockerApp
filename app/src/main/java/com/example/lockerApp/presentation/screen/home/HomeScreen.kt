@@ -17,11 +17,19 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +54,32 @@ fun HomeScreenNavigation(navController: NavHostController, viewModel: DoorsViewM
 }
 
 @Composable
+fun DoorsSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier,
+        placeholder = { Text("Search doors...") },
+        leadingIcon = {
+            Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(imageVector = Icons.Default.Close, contentDescription = "Clear")
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp)
+    )
+}
+
+@Composable
 fun HomeScreen(viewModel: DoorsViewModel) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -58,23 +92,42 @@ fun HomeScreen(viewModel: DoorsViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        when {
-            uiState.isLoading -> {
-                CircularProgressIndicator()
-            }
-            uiState.error != null && uiState.doors.isEmpty() -> {
-                ErrorView(
-                    message = uiState.error!!,
-                    onRetry = { viewModel.onIntent(DoorsIntents.OnReloadDoors) }
-                )
-            }
-            else -> {
-                DoorsList(
-                    doors = uiState.doors,
-                    isLoadingMore = uiState.isLoadingMore,
-                    hasMore = uiState.hasMore,
-                    onLoadMore = { viewModel.onIntent(DoorsIntents.OnLoadMoreDoors) }
-                )
+
+        DoorsSearchBar(
+            query = uiState.searchQuery,
+            onQueryChange = {query -> viewModel.onIntent(DoorsIntents.OnSearchDoors(query))},
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                uiState.error != null && uiState.doors.isEmpty() -> {
+                    ErrorView(
+                        message = uiState.error!!,
+                        onRetry = { viewModel.onIntent(DoorsIntents.OnReloadDoors) },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                uiState.doors.isEmpty() && !uiState.isLoading -> {
+                    Text(
+                        text = "No doors found for \"${uiState.searchQuery}\"",
+                        modifier = Modifier.align(Alignment.Center),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                else -> {
+                    DoorsList(
+                        doors = uiState.doors,
+                        isLoadingMore = uiState.isLoadingMore,
+                        hasMore = uiState.hasMore,
+                        onLoadMore = { viewModel.onIntent(DoorsIntents.OnLoadMoreDoors) }
+                    )
+                }
             }
         }
     }

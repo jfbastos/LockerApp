@@ -6,9 +6,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
 class DoorsRepository(private val service : ApiInterface,private val dispatcher: CoroutineDispatcher) {
-
-
     suspend fun getDoors(page: Int, size: Int = 20): Result<DoorsResponse> = withContext(dispatcher){
         return@withContext runCatching { service.getDoors(page, size) }
+    }
+
+    suspend fun searchDoors(query :String, page: Int, size: Int = 20): Result<DoorsResponse> = withContext(dispatcher){
+        return@withContext runCatching { service.searchDoors(query, page, size) }
     }
 }
