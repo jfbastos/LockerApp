@@ -183,8 +183,6 @@ fun SigninFormScreen(userEmail: String, onIntent : (SigninIntents) -> Unit){
 @Composable
 private fun Preview() {
     Locker_appTheme() {
-        SigninFormScreen("joao@email.com"){
-
-        }
+        SigninFormScreen("joao@email.com"){}
     }
 }

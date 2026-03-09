@@ -1,6 +1,5 @@
 package com.example.lockerApp.data.repository
 
-import android.util.Patterns.EMAIL_ADDRESS
 import com.example.lockerApp.data.Configs
 import com.example.lockerApp.data.model.User
 import com.example.lockerApp.data.model.ValidationError
@@ -10,14 +9,12 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import retrofit2.awaitResponse
-
-sealed class Either<out A, out B> {
-    class Left<A>(val value: A): Either<A, Nothing>()
-    class Right<B>(val value: B): Either<Nothing, B>()
-}
 
 class AuthenticationRepository(private val service : ApiInterface, private val configs : Configs, private val dispatcher: CoroutineDispatcher) {
+
+    private val EMAIL_REGEX = Regex(
+        "[a-zA-Z0-9+._%\\-]{1,256}@[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}(\\.[a-zA-Z]{2,})+"
+    )
 
     var loggedUser : User? = null
 
@@ -50,8 +47,8 @@ class AuthenticationRepository(private val service : ApiInterface, private val c
         return submitSignin(email, password)
     }
 
-    fun isEmailValid(email : String) : Boolean{
-        return EMAIL_ADDRESS.matcher(email).matches()
+    fun isEmailValid(email: String): Boolean {
+        return EMAIL_REGEX.matches(email)
     }
 
     fun isValidPassword(password: String): String {
@@ -64,7 +61,7 @@ class AuthenticationRepository(private val service : ApiInterface, private val c
 
     suspend fun submitNewUser(user : User) = withContext(dispatcher){
         try{
-            val response = service.submitNewUser(createNewUserBody(user))?.awaitResponse() ?: return@withContext Either.Left("NewUser service null")
+            val response = service.submitNewUser(createNewUserBody(user)) ?: return@withContext Either.Left("NewUser service null")
 
             if(response.isSuccessful){
                 loggedUser = user
@@ -108,10 +105,11 @@ class AuthenticationRepository(private val service : ApiInterface, private val c
 
         return@withContext when(response.code()){
             401 -> {
-                if(response.errorBody() != null){
-                    val error = Gson().fromJson(response.errorBody()?.string(), ValidationError::class.java)
+                val bodyString = response.errorBody()?.string()
+                if (!bodyString.isNullOrBlank()) {
+                    val error = Gson().fromJson(bodyString, ValidationError::class.java)
                     Either.Left("Failed to signin: ${error.description}")
-                }else{
+                } else {
                     Either.Left("Unknown error: Error body null")
                 }
             }

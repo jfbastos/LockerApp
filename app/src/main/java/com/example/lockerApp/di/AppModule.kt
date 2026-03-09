@@ -5,9 +5,9 @@ import com.example.lockerApp.data.repository.AuthenticationRepository
 import com.example.lockerApp.data.repository.DoorsRepository
 import com.example.lockerApp.data.rest.ApiInterface
 import com.example.lockerApp.data.rest.AuthInterceptor
-import com.example.lockerApp.presentation.viewmodel.DoorsViewModel
 import com.example.lockerApp.presentation.screen.signin.SigninViewModel
-import com.example.lockerApp.presentation.viewmodel.SignupViewModel
+import com.example.lockerApp.presentation.screen.home.DoorsViewModel
+import com.example.lockerApp.presentation.screen.signup.SignupViewModel
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
@@ -59,8 +59,8 @@ fun provideApi(retrofit: Retrofit) : ApiInterface =
 
 fun okHttpClient() : OkHttpClient{
     return OkHttpClient.Builder()
-        .connectTimeout(3, TimeUnit.MINUTES)
-        .readTimeout(5, TimeUnit.MINUTES)
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
         .addInterceptor(AuthInterceptor)
         .build()
 }

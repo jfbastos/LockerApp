@@ -42,7 +42,6 @@ import androidx.navigation.NavHostController
 import com.example.lockerApp.R
 import com.example.lockerApp.data.model.User
 import com.example.lockerApp.presentation.theme.Locker_appTheme
-import com.example.lockerApp.presentation.viewmodel.SignupViewModel
 import com.example.lockerApp.utils.Constants
 import org.koin.compose.viewmodel.koinViewModel
 

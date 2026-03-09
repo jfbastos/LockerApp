@@ -9,13 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-sealed class SigninUiState{
-    data object Loading : SigninUiState()
-    data class OnSignIn(var mail : String) : SigninUiState()
-    data object UserLogged : SigninUiState()
-}
-
-
 class SigninViewModel(private val authenticationRepository: AuthenticationRepository) : ViewModel(){
 
     private val _signinState : MutableStateFlow<SigninUiState> = MutableStateFlow(SigninUiState.Loading)

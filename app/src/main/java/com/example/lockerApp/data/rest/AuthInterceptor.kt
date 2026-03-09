@@ -12,10 +12,6 @@ object AuthInterceptor : Interceptor{
 
         request = request.newBuilder().addHeader("Authorization", "Bearer $sessionToken" ).build()
 
-/*        if(request.header("Authorization") != null){
-
-        }*/
-
         return chain.proceed(request)
     }
 }

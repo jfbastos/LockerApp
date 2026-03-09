@@ -1,9 +1,8 @@
 package com.example.lockerApp.data.rest
 
 import com.example.lockerApp.data.model.DoorsResponse
-import com.example.lockerApp.data.model.SiginResponse
+import com.example.lockerApp.data.model.SigninResponse
 import com.google.gson.JsonObject
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -17,10 +16,10 @@ interface  ApiInterface {
     }
 
     @POST("/users/signup")
-    fun submitNewUser(@Body user : JsonObject) : Call<JsonObject?>?
+    suspend fun submitNewUser(@Body user : JsonObject) : Response<JsonObject?>?
 
     @POST("/users/signin")
-    suspend fun submitSignin(@Body siginInfo : JsonObject) : Response<SiginResponse>
+    suspend fun submitSignin(@Body siginInfo : JsonObject) : Response<SigninResponse>
 
     @GET("doors")
     suspend fun getDoors(

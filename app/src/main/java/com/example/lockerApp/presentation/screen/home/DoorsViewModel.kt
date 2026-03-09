@@ -1,11 +1,8 @@
-package com.example.lockerApp.presentation.viewmodel
+package com.example.lockerApp.presentation.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lockerApp.data.model.Door
 import com.example.lockerApp.data.repository.DoorsRepository
-import com.example.lockerApp.presentation.screen.home.DoorsIntents
-import com.example.lockerApp.presentation.screen.home.DoorsUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +12,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class DoorsViewModel(val doorsRepository: DoorsRepository) : ViewModel(){
+class DoorsViewModel(private val doorsRepository: DoorsRepository) : ViewModel(){
 
     private val _uiState = MutableStateFlow(DoorsUiState())
     val uiState: StateFlow<DoorsUiState> = _uiState.asStateFlow()

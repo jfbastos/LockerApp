@@ -4,9 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import java.util.prefs.Preferences
 
-class Configs(val context : Context) {
+class Configs(context : Context) {
 
     private var sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
