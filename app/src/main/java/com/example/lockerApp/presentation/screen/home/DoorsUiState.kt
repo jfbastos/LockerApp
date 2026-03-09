@@ -9,5 +9,6 @@ data class DoorsUiState(
     val error: String? = null,
     val currentPage: Int = 0,
     val totalPages: Int = 0,
-    val hasMore: Boolean = true
+    val hasMore: Boolean = true,
+    val searchQuery: String = ""
 )
