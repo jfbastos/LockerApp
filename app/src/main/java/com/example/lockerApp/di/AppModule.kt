@@ -6,7 +6,7 @@ import com.example.lockerApp.data.repository.DoorsRepository
 import com.example.lockerApp.data.rest.ApiInterface
 import com.example.lockerApp.data.rest.AuthInterceptor
 import com.example.lockerApp.presentation.viewmodel.DoorsViewModel
-import com.example.lockerApp.presentation.viewmodel.SigninViewModel
+import com.example.lockerApp.presentation.screen.signin.SigninViewModel
 import com.example.lockerApp.presentation.viewmodel.SignupViewModel
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

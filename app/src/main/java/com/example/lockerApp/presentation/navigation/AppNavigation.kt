@@ -22,18 +22,8 @@ fun AppNavigation() {
         composable(Constants.SIGNUP_SCREEN_DESTINATION){
             SignupScreenNavigation(navController)
         }
-        composable(
-            route = "${Constants.SIGNIN_SCREEN_DESTINATION}?userEmail={userEmail}",
-            arguments = listOf(
-                navArgument("userEmail") {
-                    type = NavType.StringType
-                    nullable = true
-                    defaultValue = ""
-                }
-            )
-        ) { backStackEntry ->
-            val userEmail = backStackEntry.arguments?.getString("userEmail") ?: ""
-            SigninScreenNavigation(userEmail, navController)
+        composable(Constants.SIGNIN_SCREEN_DESTINATION){
+            SigninScreenNavigation(navController)
         }
         composable(Constants.HOME_SCREEN_DESTINATION){
             HomeScreenNavigation(navController)

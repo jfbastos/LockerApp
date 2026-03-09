@@ -1,10 +1,9 @@
 package com.example.lockerApp.data.repository
 
-import android.util.Log
 import android.util.Patterns.EMAIL_ADDRESS
 import com.example.lockerApp.data.Configs
-import com.example.lockerApp.data.model.ValidationError
 import com.example.lockerApp.data.model.User
+import com.example.lockerApp.data.model.ValidationError
 import com.example.lockerApp.data.rest.ApiInterface
 import com.example.lockerApp.data.rest.AuthInterceptor
 import com.google.gson.Gson
@@ -13,7 +12,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import retrofit2.awaitResponse
 
-
 sealed class Either<out A, out B> {
     class Left<A>(val value: A): Either<A, Nothing>()
     class Right<B>(val value: B): Either<Nothing, B>()
@@ -21,10 +19,10 @@ sealed class Either<out A, out B> {
 
 class AuthenticationRepository(private val service : ApiInterface, private val configs : Configs, private val dispatcher: CoroutineDispatcher) {
 
+    var loggedUser : User? = null
+
     fun isUserAlreadyLogged() : Boolean{
-        Log.d("DEBUG", "Check token")
         val token = configs.token ?: return false
-        Log.d("DEBUG", "Token existis -> ${configs.token}")
         return if(token.isNotBlank()){
             AuthInterceptor.sessionToken = token
             true
@@ -68,7 +66,10 @@ class AuthenticationRepository(private val service : ApiInterface, private val c
         try{
             val response = service.submitNewUser(createNewUserBody(user))?.awaitResponse() ?: return@withContext Either.Left("NewUser service null")
 
-            if(response.isSuccessful) return@withContext Either.Right(user.email)
+            if(response.isSuccessful){
+                loggedUser = user
+                return@withContext Either.Right(user.email)
+            }
 
             return@withContext when(response.code()){
                 409 -> Either.Left("E-mail já cadastrado")
@@ -101,6 +102,7 @@ class AuthenticationRepository(private val service : ApiInterface, private val c
 
         if(response.isSuccessful) {
             configs.token = response.body()?.token
+            AuthInterceptor.sessionToken = configs.token
             return@withContext Either.Right(Unit)
         }
 

@@ -1,22 +1,28 @@
-package com.example.lockerApp.presentation.viewmodel
+package com.example.lockerApp.presentation.screen.signin
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lockerApp.data.repository.AuthenticationRepository
 import com.example.lockerApp.data.repository.Either
-import com.example.lockerApp.presentation.screen.signin.NavigationSigninEvents
-import com.example.lockerApp.presentation.screen.signin.SigninIntents
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+sealed class SigninUiState{
+    data object Loading : SigninUiState()
+    data class OnSignIn(var mail : String) : SigninUiState()
+    data object UserLogged : SigninUiState()
+}
+
 
 class SigninViewModel(private val authenticationRepository: AuthenticationRepository) : ViewModel(){
 
+    private val _signinState : MutableStateFlow<SigninUiState> = MutableStateFlow(SigninUiState.Loading)
+    val signinState = _signinState
+
     private val _onNavigateEvent = MutableSharedFlow<NavigationSigninEvents>(0)
     val onNavigateEvent = _onNavigateEvent
-
-    private val _onSigninSuccess = MutableSharedFlow<Unit>(1)
-    val onSigninSuccess = _onSigninSuccess
 
     private val _onError = MutableSharedFlow<String>(0)
     val onError = _onError
@@ -25,7 +31,7 @@ class SigninViewModel(private val authenticationRepository: AuthenticationReposi
         checkUserLogged()
     }
 
-    fun onIntent(intent : SigninIntents) = viewModelScope.launch{
+    fun onIntent(intent : SigninIntents) = viewModelScope.launch {
         when(intent){
             SigninIntents.OnNavigateToSignUp -> { _onNavigateEvent.emit(
                 NavigationSigninEvents.GoToSignUpScreen)
@@ -39,17 +45,16 @@ class SigninViewModel(private val authenticationRepository: AuthenticationReposi
 
     fun checkUserLogged() = viewModelScope.launch {
         if(authenticationRepository.isUserAlreadyLogged()){
-            Log.d("DEBUG", "User logged")
-            _onSigninSuccess.emit(Unit)
+            _signinState.update { SigninUiState.UserLogged }
         }else{
-            Log.d("DEBUG", "User not logged")
+            _signinState.update { SigninUiState.OnSignIn(authenticationRepository.loggedUser?.email ?: "") }
         }
     }
 
     fun onSubmitSignin(email : String, password : String) = viewModelScope.launch {
         when(val result = authenticationRepository.validateSignin(email, password)){
             is Either.Left<String> -> { _onError.emit(result.value) }
-            is Either.Right<*> -> { _onSigninSuccess.emit(Unit) }
+            is Either.Right<*> -> { _signinState.update { SigninUiState.UserLogged } }
         }
     }
 }

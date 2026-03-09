@@ -1,11 +1,11 @@
 package com.example.lockerApp.presentation.screen.signin
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -39,21 +41,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.lockerApp.R
 import com.example.lockerApp.presentation.theme.Locker_appTheme
-import com.example.lockerApp.presentation.viewmodel.SigninViewModel
 import com.example.lockerApp.utils.Constants
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun SigninScreenNavigation(userEmail : String, navController: NavHostController, viewModel: SigninViewModel = koinViewModel()){
+fun SigninScreenNavigation(navController: NavHostController, viewModel: SigninViewModel = koinViewModel()){
 
-    SigninScreen(userEmail, viewModel)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val uiState by viewModel.signinState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.onNavigateEvent.collect { navigationEvent ->
-            Log.d("DEBUG", "Navigate to $navigationEvent")
             when(navigationEvent){
                 NavigationSigninEvents.GoToHomeScreen -> { navController.navigate(Constants.HOME_SCREEN_DESTINATION){
                     popUpTo(Constants.SIGNIN_SCREEN_DESTINATION) { inclusive = true }
@@ -64,30 +66,47 @@ fun SigninScreenNavigation(userEmail : String, navController: NavHostController,
     }
 
     LaunchedEffect(Unit) {
-        viewModel.onSigninSuccess.collect {
-            Log.d("DEBUG", "Go to homeScreen")
-            viewModel.onIntent(SigninIntents.OnNavigateToHomeScreen)
-        }
-    }
-}
-
-@Composable
-fun SigninScreen(userEmail: String, viewModel: SigninViewModel){
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(Unit) {
         viewModel.onError.collect { msg ->
             snackbarHostState.showSnackbar(msg)
         }
     }
 
-    Box(Modifier.fillMaxSize()){
-        SigninFormScreen(userEmail, viewModel::onIntent)
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { contentPadding ->
+        SigninScreen(uiState, viewModel::onIntent, contentPadding)
+    }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp)
-        )
+}
+
+@Composable
+fun SigninScreen(
+    uiState: SigninUiState,
+    onIntent: (SigninIntents) -> Unit,
+    contentPadding: PaddingValues
+) {
+    LaunchedEffect(uiState::class) {
+        when (uiState) {
+            SigninUiState.UserLogged -> {
+                onIntent(SigninIntents.OnNavigateToHomeScreen)
+            }
+
+            else -> {}
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxWidth().padding(contentPadding)){
+        when (uiState) {
+            SigninUiState.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+            SigninUiState.UserLogged -> {}
+            is SigninUiState.OnSignIn -> {
+                SigninFormScreen(uiState.mail, onIntent)
+            }
+        }
     }
 }
 
